@@ -1,0 +1,33 @@
+<%- include('../partials/admin-header') %>
+<div class="head">
+  <h1><%= r.label %></h1>
+  <a class="btn" href="/admin/r/<%= resourceKey %>/new">+ Add <%= r.singular.toLowerCase() %></a>
+</div>
+<div class="panel">
+<% if (items.length) { %>
+  <table class="list">
+    <thead><tr><% r.columns.forEach((c) => { const f = r.fields.find((x) => x.name === c); %><th><%= f ? f.label : (c === 'createdAt' ? 'Submitted' : c) %></th><% }) %><th></th></tr></thead>
+    <tbody>
+    <% items.forEach((it) => { %>
+      <tr>
+        <% r.columns.forEach((c) => { const f = r.fields.find((x) => x.name === c) || { type: c === 'createdAt' ? 'date' : 'text' }; %>
+          <td>
+            <% if (f.type === 'image') { %><% if (it[c]) { %><img class="thumb" src="<%= u.mediaUrl(it[c]) %>" alt=""><% } %>
+            <% } else if (f.type === 'checkbox') { %>
+              <form method="post" action="/admin/r/<%= resourceKey %>/<%= it._id %>/toggle/<%= c %>" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="pill <%= it[c] ? 'on' : 'off' %>" title="Click to change"><%= it[c] ? 'Yes' : 'No' %></button></form>
+            <% } else if (f.type === 'date') { %><%= u.formatDate(it[c]) %>
+            <% } else if (f.type === 'time') { %><%= u.formatTime(it[c]) %>
+            <% } else { %><%= u.excerpt(it[c], 60) %><% } %>
+          </td>
+        <% }) %>
+        <td class="row-actions">
+          <a href="/admin/r/<%= resourceKey %>/<%= it._id %>/edit">Edit</a>
+          <form method="post" action="/admin/r/<%= resourceKey %>/<%= it._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link danger">Delete</button></form>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+<% } else { %><p class="muted">Nothing here yet. Click "Add <%= r.singular.toLowerCase() %>" to get started.</p><% } %>
+</div>
+<%- include('../partials/admin-footer') %>

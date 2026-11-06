@@ -1,0 +1,9 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow center">
+    <h1><%= title %></h1>
+    <p><%= typeof error !== 'undefined' && error ? 'Please try again in a moment.' : "The page you are looking for doesn't exist." %></p>
+    <a class="btn btn-primary" href="/">Go to home page</a>
+  </div>
+</section>
+<%- include('../partials/footer') %>

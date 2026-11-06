@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Testimonies', sub: 'Stories of what God has done in our lives.' }) %>
+<section class="section">
+  <div class="container">
+    <% if (testimonies.length) { %>
+      <div class="grid grid-2"><% testimonies.forEach((t) => { %><%- include('../partials/testimony-card', { t, full: true }) %><% }) %></div>
+    <% } else { %><p class="empty">Be the first to share a testimony!</p><% } %>
+  </div>
+</section>
+<section class="section section-alt" id="share">
+  <div class="container narrow">
+    <h2 class="center">Share your testimony</h2>
+    <p class="center">Has God done something in your life? Encourage others by sharing it. Testimonies are reviewed before they appear on the site.</p>
+    <form class="form" method="post" action="/testimonies">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="form-row">
+        <label>Your name<input name="name" required maxlength="100"></label>
+        <label>Title (optional)<input name="title" maxlength="150" placeholder="e.g. Healed by God's grace"></label>
+      </div>
+      <label>Your story<textarea name="story" rows="6" required maxlength="5000"></textarea></label>
+      <button class="btn btn-primary">Submit testimony</button>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

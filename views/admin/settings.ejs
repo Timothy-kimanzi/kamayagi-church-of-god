@@ -1,0 +1,8 @@
+<%- include('../partials/admin-header') %>
+<h1><%= group.label %></h1>
+<form method="post" enctype="multipart/form-data" class="panel form">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <% group.fields.forEach((f) => { %><%- include('../partials/field', { f, values }) %><% }) %>
+  <div class="actions"><button class="btn">Save changes</button></div>
+</form>
+<%- include('../partials/admin-footer') %>

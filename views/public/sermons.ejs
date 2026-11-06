@@ -1,0 +1,10 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Sermons', sub: 'Watch and listen to messages from the Word of God.' }) %>
+<section class="section">
+  <div class="container">
+    <% if (sermons.length) { %>
+      <div class="grid grid-3"><% sermons.forEach((sermon) => { %><%- include('../partials/sermon-card', { sermon }) %><% }) %></div>
+    <% } else { %><p class="empty">Sermons will be posted here soon. <a href="/live">Watch our live stream</a>.</p><% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

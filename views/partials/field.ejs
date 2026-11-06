@@ -1,0 +1,26 @@
+<% const v = values[f.name]; %>
+<div class="field field-<%= f.type %>">
+  <% if (f.type === 'checkbox') { %>
+    <label class="check"><input type="checkbox" name="<%= f.name %>" <%= v ? 'checked' : '' %>> <%= f.label %></label>
+  <% } else { %>
+    <label for="f-<%= f.name %>"><%= f.label %><%= f.required ? ' *' : '' %></label>
+    <% if (f.type === 'textarea') { %>
+      <textarea id="f-<%= f.name %>" name="<%= f.name %>" rows="<%= f.name === 'story' || f.name === 'summary' || f.name === 'description' ? 7 : 4 %>"><%= v %></textarea>
+    <% } else if (f.type === 'select') { %>
+      <select id="f-<%= f.name %>" name="<%= f.name %>">
+        <% f.options.forEach((o) => { %><option <%= v === o ? 'selected' : '' %>><%= o %></option><% }) %>
+      </select>
+    <% } else if (f.type === 'image') { %>
+      <div class="image-field">
+        <img class="preview" src="<%= v ? u.mediaUrl(v) : '' %>" alt="" <%= v ? '' : 'hidden' %>>
+        <input id="f-<%= f.name %>" type="file" name="<%= f.name %>" accept="image/*" <%= f.required && !v ? 'required' : '' %>>
+        <% if (v && !f.required) { %><label class="check small"><input type="checkbox" name="<%= f.name %>_remove"> Remove current image</label><% } %>
+      </div>
+    <% } else if (f.type === 'date') { %>
+      <input id="f-<%= f.name %>" type="date" name="<%= f.name %>" value="<%= v ? new Date(v).toLocaleDateString('en-CA', { timeZone: 'Africa/Nairobi' }) : '' %>" <%= f.required ? 'required' : '' %>>
+    <% } else { %>
+      <input id="f-<%= f.name %>" type="<%= { url: 'url', number: 'number', time: 'time', color: 'color' }[f.type] || 'text' %>" name="<%= f.name %>" value="<%= v %>" <%= f.required ? 'required' : '' %> <%= f.type === 'url' ? 'placeholder=https://' : '' %>>
+    <% } %>
+  <% } %>
+  <% if (f.help) { %><small class="help"><%= f.help %></small><% } %>
+</div>

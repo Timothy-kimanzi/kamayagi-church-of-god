@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Service Times', sub: 'We would love to worship with you. Everyone is welcome!' }) %>
+<section class="section">
+  <div class="container">
+    <% if (services.length) { %><%- include('../partials/service-list', { services }) %><% } else { %><p class="empty">Service times will be posted soon.</p><% } %>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container split">
+    <div>
+      <h2>Plan your visit</h2>
+      <p><strong>Where:</strong> <%= s.address %></p>
+      <% if (s.phone) { %><p><strong>Call:</strong> <a href="tel:<%= s.phone.replace(/\s/g, '') %>"><%= s.phone %></a></p><% } %>
+      <p>Come as you are. Our ushers will welcome you and help you find a seat. There is a Sunday School for children during the main service.</p>
+      <a class="btn btn-primary" href="/contact">Get directions &amp; contact us</a>
+    </div>
+    <div class="map"><iframe title="Map" loading="lazy" src="https://www.google.com/maps?q=<%= encodeURIComponent(s.mapQuery) %>&output=embed"></iframe></div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

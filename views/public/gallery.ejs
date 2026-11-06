@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Gallery', sub: 'Moments from our church family.' }) %>
+<section class="section">
+  <div class="container">
+    <% if (albums.length) { %>
+      <div class="filters">
+        <button class="chip active" data-album="">All</button>
+        <% albums.forEach((a) => { %><button class="chip" data-album="<%= a %>"><%= a %></button><% }) %>
+      </div>
+    <% } %>
+    <% if (photos.length) { %>
+      <div class="gallery-grid">
+        <% photos.forEach((p) => { %>
+          <figure data-album="<%= p.album || '' %>">
+            <a href="<%= u.mediaUrl(p.image) %>" class="lightbox-link" data-caption="<%= p.caption || '' %>"><img src="<%= u.mediaUrl(p.image) %>" alt="<%= p.caption || '' %>" loading="lazy"></a>
+            <% if (p.caption) { %><figcaption><%= p.caption %></figcaption><% } %>
+          </figure>
+        <% }) %>
+      </div>
+    <% } else { %><p class="empty">Photos coming soon.</p><% } %>
+  </div>
+</section>
+<div class="lightbox" hidden><button class="lightbox-close" aria-label="Close">&times;</button><img alt=""><p></p></div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Ministries', sub: 'There is a place for everyone to belong, grow and serve.' }) %>
+<section class="section">
+  <div class="container">
+    <% if (ministries.length) { %>
+    <div class="ministry-list">
+      <% ministries.forEach((m) => { %>
+        <article class="ministry-row">
+          <% if (m.image) { %><img src="<%= u.mediaUrl(m.image) %>" alt="" loading="lazy"><% } else { %><div class="photo-placeholder"><%= m.name %></div><% } %>
+          <div>
+            <h2><%= m.name %></h2>
+            <p class="meta"><%= [m.leader ? 'Leader: ' + m.leader : '', m.meetingTime].filter(Boolean).join(' · ') %></p>
+            <% u.paragraphs(m.description).forEach((p) => { %><p><%= p %></p><% }) %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+    <% } else { %><p class="empty">Ministries will be listed here soon.</p><% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

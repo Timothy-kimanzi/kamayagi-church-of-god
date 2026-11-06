@@ -1,0 +1,47 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'About Us', sub: s.tagline }) %>
+<section class="section">
+  <div class="container split">
+    <div>
+      <% u.paragraphs(s.aboutIntro).forEach((p) => { %><p class="lead-dark"><%= p %></p><% }) %>
+      <h2>Our History</h2>
+      <% u.paragraphs(s.history).forEach((p) => { %><p><%= p %></p><% }) %>
+    </div>
+    <div>
+      <% if (s.aboutImage) { %><img class="rounded-img" src="<%= u.mediaUrl(s.aboutImage) %>" alt="<%= s.churchName %>"><% } else { %><div class="photo-placeholder tall">Church photo</div><% } %>
+    </div>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container grid grid-2">
+    <div class="feature"><h3>Our Mission</h3><p><%= s.mission %></p></div>
+    <div class="feature"><h3>Our Vision</h3><p><%= s.vision %></p></div>
+  </div>
+</section>
+<section class="section">
+  <div class="container narrow">
+    <h2 class="center">What We Believe</h2>
+    <ul class="beliefs">
+      <% u.lines(s.beliefs).forEach((b) => { %><li><%= b %></li><% }) %>
+    </ul>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="center">Our Leadership</h2>
+    <div class="grid grid-4 leaders">
+      <div class="leader">
+        <% if (s.pastorPhoto) { %><img src="<%= u.mediaUrl(s.pastorPhoto) %>" alt=""><% } else { %><span class="avatar avatar-lg"><%= s.pastorName.charAt(0) %></span><% } %>
+        <h3><%= s.pastorName %></h3><span><%= s.pastorTitle %></span>
+      </div>
+      <% leaders.forEach((l) => { %>
+        <div class="leader">
+          <% if (l.photo) { %><img src="<%= u.mediaUrl(l.photo) %>" alt=""><% } else { %><span class="avatar avatar-lg"><%= (l.name || '?').charAt(0) %></span><% } %>
+          <h3><%= l.name %></h3><span><%= l.role %></span>
+          <% if (l.bio) { %><p><%= l.bio %></p><% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,12 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow">
+    <a href="/events" class="back">&larr; All events</a>
+    <h1><%= event.title %></h1>
+    <p class="meta"><%= u.formatDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %><%= event.endDate ? ' – ' + u.formatDate(event.endDate) : '' %><%= event.time ? ' · ' + event.time : '' %></p>
+    <% if (event.location) { %><p class="meta">📍 <%= event.location %></p><% } %>
+    <% if (event.image) { %><img class="rounded-img" src="<%= u.mediaUrl(event.image) %>" alt=""><% } %>
+    <% u.paragraphs(event.description).forEach((p) => { %><p><%= p %></p><% }) %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Contact Us', sub: 'We would love to hear from you. Send us a message or a prayer request.' }) %>
+<section class="section">
+  <div class="container split">
+    <div>
+      <h2>Get in touch</h2>
+      <p><strong>Address</strong><br><%= s.address %></p>
+      <% if (s.phone) { %><p><strong>Phone</strong><br><a href="tel:<%= s.phone.replace(/\s/g, '') %>"><%= s.phone %></a></p><% } %>
+      <% if (s.whatsapp) { %><p><strong>WhatsApp</strong><br><a href="https://wa.me/<%= s.whatsapp.replace(/\D/g, '') %>" target="_blank" rel="noopener">Chat with us</a></p><% } %>
+      <% if (s.email) { %><p><strong>Email</strong><br><a href="mailto:<%= s.email %>"><%= s.email %></a></p><% } %>
+      <% if (s.officeHours) { %><p><strong>Office hours</strong><br><%= s.officeHours %></p><% } %>
+    </div>
+    <form class="form card-form" method="post" action="/contact" id="form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label>Your name<input name="name" required maxlength="100"></label>
+      <div class="form-row">
+        <label>Phone<input name="phone" maxlength="30"></label>
+        <label>Email<input name="email" type="email" maxlength="150"></label>
+      </div>
+      <label>Subject
+        <select name="subject"><option>General enquiry</option><option>Prayer request</option><option>I'm new / planning a visit</option><option>Counselling</option><option>Wedding / dedication / baptism</option></select>
+      </label>
+      <label>Message<textarea name="message" rows="5" required maxlength="5000"></textarea></label>
+      <button class="btn btn-primary">Send message</button>
+    </form>
+  </div>
+</section>
+<div class="map map-wide"><iframe title="Map" loading="lazy" src="https://www.google.com/maps?q=<%= encodeURIComponent(s.mapQuery) %>&output=embed"></iframe></div>
+<%- include('../partials/footer') %>

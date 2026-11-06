@@ -1,0 +1,12 @@
+<% const yt = u.youtubeId(sermon.videoUrl); const thumb = sermon.image ? u.mediaUrl(sermon.image) : (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : null); %>
+<a class="card" href="/sermons/<%= sermon._id %>">
+  <div class="card-media <%= thumb ? '' : 'card-media-empty' %>">
+    <% if (thumb) { %><img src="<%= thumb %>" alt="" loading="lazy"><% } else { %><span>✝</span><% } %>
+    <% if (sermon.videoUrl) { %><span class="play">▶</span><% } %>
+  </div>
+  <div class="card-body">
+    <div class="meta"><%= u.formatDate(sermon.date) %><%= sermon.preacher ? ' · ' + sermon.preacher : '' %></div>
+    <h3><%= sermon.title %></h3>
+    <% if (sermon.scripture) { %><div class="scripture"><%= sermon.scripture %></div><% } %>
+  </div>
+</a>

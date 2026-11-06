@@ -1,0 +1,8 @@
+<%- include('../partials/admin-header') %>
+<div class="head"><h1><%= title %></h1><a href="/admin/r/<%= resourceKey %>">&larr; Back to <%= r.label %></a></div>
+<form method="post" action="<%= action %>" enctype="multipart/form-data" class="panel form">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <% r.fields.forEach((f) => { %><%- include('../partials/field', { f, values: item }) %><% }) %>
+  <div class="actions"><button class="btn">Save</button><a href="/admin/r/<%= resourceKey %>">Cancel</a></div>
+</form>
+<%- include('../partials/admin-footer') %>

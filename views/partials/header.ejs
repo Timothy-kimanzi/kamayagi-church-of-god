@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' && title ? title + ' | ' : '' %><%= s.churchName %></title>
+  <meta name="description" content="<%= s.tagline %> - <%= s.address %>">
+  <% if (s.logo) { %><link rel="icon" href="<%= u.mediaUrl(s.logo) %>"><% } %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>:root{--primary:<%= s.primaryColor %>;--accent:<%= s.accentColor %>;}</style>
+</head>
+<body>
+<% if (s.isLive) { %>
+  <a class="live-banner" href="/live"><span class="live-dot"></span> We are LIVE now &mdash; click to watch</a>
+<% } %>
+<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="/">
+      <% if (s.logo) { %><img src="<%= u.mediaUrl(s.logo) %>" alt="<%= s.churchName %> logo"><% } else { %><span class="brand-mark">✝</span><% } %>
+      <span class="brand-text"><%= s.churchName %></span>
+    </a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="main-nav">
+      <% const links = [['/', 'Home', 'home'], ['/about', 'About', 'about'], ['/services', 'Services', 'services'], ['/ministries', 'Ministries', 'ministries'], ['/sermons', 'Sermons', 'sermons'], ['/events', 'Events', 'events'], ['/testimonies', 'Testimonies', 'testimonies'], ['/gallery', 'Gallery', 'gallery'], ['/contact', 'Contact', 'contact']]; %>
+      <% links.forEach(([href, label, key]) => { %>
+        <a href="<%= href %>" class="<%= typeof page !== 'undefined' && page === key ? 'active' : '' %>"><%= label %></a>
+      <% }) %>
+      <a href="/live" class="btn btn-outline btn-sm <%= typeof page !== 'undefined' && page === 'live' ? 'active' : '' %>"><% if (s.isLive) { %><span class="live-dot"></span><% } %> Watch Live</a>
+      <a href="/give" class="btn btn-accent btn-sm">Give</a>
+    </nav>
+  </div>
+</header>
+<main>
+<% if (flash) { %>
+  <div class="container"><div class="alert alert-<%= flash.type %>"><%= flash.message %></div></div>
+<% } %>

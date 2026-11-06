@@ -1,0 +1,33 @@
+<%- include('../partials/admin-header') %>
+<h1>Welcome, <%= userName %></h1>
+<p class="muted">Manage everything on the <%= s.churchName %> website from here. Changes show on the website immediately.</p>
+<div class="quick">
+  <form method="post" action="/admin/settings/live" class="panel live-toggle">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <% settingGroups.find((g) => g.id === 'live').fields.forEach((f) => { if (f.type !== 'checkbox') { %><input type="hidden" name="<%= f.name %>" value="<%= s[f.name] %>"><% } }) %>
+    <% if (!s.isLive) { %><input type="hidden" name="isLive" value="on"><% } %>
+    <div><strong>Live stream</strong><br><span class="muted"><%= s.isLive ? 'The live banner is ON.' : 'Not live right now.' %></span></div>
+    <button class="btn <%= s.isLive ? 'btn-danger' : '' %>"><%= s.isLive ? 'End live' : 'Go live' %></button>
+  </form>
+  <a class="panel quick-link" href="/admin/settings/live">Set live stream links &rarr;</a>
+  <a class="panel quick-link" href="/admin/r/sermons/new">+ Add sermon</a>
+  <a class="panel quick-link" href="/admin/r/events/new">+ Add event</a>
+  <a class="panel quick-link" href="/admin/r/gallery/new">+ Upload photo</a>
+</div>
+<div class="stats">
+  <% Object.entries(resources).forEach(([k, r]) => { %>
+    <a class="stat panel" href="/admin/r/<%= k %>"><strong><%= counts[k] %></strong><span><%= r.label %></span></a>
+  <% }) %>
+</div>
+<% if (badges.testimonies) { %><div class="alert alert-info"><%= badges.testimonies %> testimon<%= badges.testimonies === 1 ? 'y is' : 'ies are' %> waiting for approval. <a href="/admin/r/testimonies">Review now</a></div><% } %>
+<div class="panel">
+  <h2>Recent messages</h2>
+  <% if (messages.length) { %>
+    <table><tbody>
+      <% messages.forEach((m) => { %>
+        <tr class="<%= m.read ? '' : 'unread' %>"><td><a href="/admin/messages/<%= m._id %>"><%= m.name %></a></td><td><%= m.subject %></td><td class="muted"><%= u.formatDate(m.createdAt) %></td></tr>
+      <% }) %>
+    </tbody></table>
+  <% } else { %><p class="muted">No messages yet.</p><% } %>
+</div>
+<%- include('../partials/admin-footer') %>

@@ -1,0 +1,15 @@
+<%- include('../partials/admin-header') %>
+<div class="login">
+  <form method="post" action="/admin/login" class="panel">
+    <% if (s.logo) { %><img src="<%= u.mediaUrl(s.logo) %>" alt="" class="login-logo"><% } %>
+    <h1><%= s.churchName %></h1>
+    <p class="muted">Admin login</p>
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <div class="field"><label>Email</label><input type="email" name="email" required autofocus></div>
+    <div class="field"><label>Password</label><input type="password" name="password" required></div>
+    <button class="btn">Log in</button>
+    <p class="small"><a href="/">&larr; Back to website</a></p>
+  </form>
+</div>
+<%- include('../partials/admin-footer') %>

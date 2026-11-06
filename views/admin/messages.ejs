@@ -1,0 +1,15 @@
+<%- include('../partials/admin-header') %>
+<h1>Messages &amp; Prayer Requests</h1>
+<div class="panel">
+<% if (messages.length) { %>
+  <table class="list">
+    <thead><tr><th>From</th><th>Subject</th><th>Message</th><th>Date</th></tr></thead>
+    <tbody>
+      <% messages.forEach((m) => { %>
+        <tr class="<%= m.read ? '' : 'unread' %>"><td><a href="/admin/messages/<%= m._id %>"><%= m.name %></a></td><td><%= m.subject %></td><td><%= u.excerpt(m.message, 70) %></td><td class="muted"><%= u.formatDate(m.createdAt) %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %><p class="muted">No messages yet. Messages sent from the Contact page will appear here.</p><% } %>
+</div>
+<%- include('../partials/admin-footer') %>

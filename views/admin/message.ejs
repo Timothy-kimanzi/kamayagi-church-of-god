@@ -1,0 +1,10 @@
+<%- include('../partials/admin-header') %>
+<div class="head"><h1><%= message.subject %></h1><a href="/admin/messages">&larr; All messages</a></div>
+<div class="panel">
+  <p><strong><%= message.name %></strong> · <span class="muted"><%= u.formatDate(message.createdAt, { dateStyle: 'medium', timeStyle: 'short' }) %></span></p>
+  <% if (message.phone) { %><p>Phone: <a href="tel:<%= message.phone %>"><%= message.phone %></a></p><% } %>
+  <% if (message.email) { %><p>Email: <a href="mailto:<%= message.email %>"><%= message.email %></a></p><% } %>
+  <div class="message-body"><%= message.message %></div>
+  <form method="post" action="/admin/messages/<%= message._id %>/delete" class="confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger">Delete message</button></form>
+</div>
+<%- include('../partials/admin-footer') %>

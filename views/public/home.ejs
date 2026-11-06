@@ -1,0 +1,130 @@
+<%- include('../partials/header') %>
+<section class="hero" <% if (s.heroImage) { %>style="background-image:linear-gradient(rgba(10,20,50,.55),rgba(10,20,50,.7)),url('<%= u.mediaUrl(s.heroImage) %>')"<% } %>>
+  <div class="container hero-inner">
+    <p class="eyebrow"><%= s.tagline %></p>
+    <h1><%= s.heroTitle %></h1>
+    <p class="lead"><%= s.heroSubtitle %></p>
+    <div class="hero-actions">
+      <a class="btn btn-accent" href="/services">Plan Your Visit</a>
+      <a class="btn btn-light" href="/live"><% if (s.isLive) { %><span class="live-dot"></span> Watch Live Now<% } else { %>Watch Online<% } %></a>
+    </div>
+  </div>
+</section>
+
+<% if (services.length) { %>
+<section class="section section-tight services-strip">
+  <div class="container">
+    <%- include('../partials/service-list', { services }) %>
+  </div>
+</section>
+<% } %>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow">Welcome</p>
+      <h2><%= s.welcomeTitle %></h2>
+      <% u.paragraphs(s.welcomeText).forEach((p) => { %><p><%= p %></p><% }) %>
+      <a class="btn btn-primary" href="/about">Learn More About Us</a>
+    </div>
+    <div class="pastor-card">
+      <% if (s.pastorPhoto) { %><img src="<%= u.mediaUrl(s.pastorPhoto) %>" alt="<%= s.pastorName %>"><% } else { %><div class="photo-placeholder">Pastor photo</div><% } %>
+      <blockquote><%= s.pastorMessage %></blockquote>
+      <strong><%= s.pastorName %></strong><span><%= s.pastorTitle %></span>
+    </div>
+  </div>
+</section>
+
+<section class="verse">
+  <div class="container">
+    <p>“<%= s.verseText %>”</p>
+    <span><%= s.verseRef %></span>
+  </div>
+</section>
+
+<% if (ministries.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">Get Involved</p><h2>Our Ministries</h2></div><a href="/ministries">All ministries &rarr;</a></div>
+    <div class="grid grid-3">
+      <% ministries.forEach((m) => { %>
+        <div class="ministry">
+          <% if (m.image) { %><img src="<%= u.mediaUrl(m.image) %>" alt="" loading="lazy"><% } %>
+          <h3><%= m.name %></h3>
+          <p><%= u.excerpt(m.description, 110) %></p>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (events.length) { %>
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">What's Coming Up</p><h2>Upcoming Events</h2></div><a href="/events">All events &rarr;</a></div>
+    <div class="grid grid-3">
+      <% events.forEach((event) => { %><%- include('../partials/event-card', { event }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (sermons.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">The Word</p><h2>Latest Sermons</h2></div><a href="/sermons">All sermons &rarr;</a></div>
+    <div class="grid grid-3">
+      <% sermons.forEach((sermon) => { %><%- include('../partials/sermon-card', { sermon }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section live-cta">
+  <div class="container split split-center">
+    <div>
+      <p class="eyebrow">Can't make it in person?</p>
+      <h2>Worship with us online</h2>
+      <p>We stream our services live on YouTube and Facebook. <%= s.liveSchedule %>.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-accent" href="/live">Go to Live Stream</a>
+      <% if (s.youtubeUrl) { %><a class="btn btn-light" href="<%= s.youtubeUrl %>" target="_blank" rel="noopener">YouTube</a><% } %>
+      <% if (s.facebookUrl) { %><a class="btn btn-light" href="<%= s.facebookUrl %>" target="_blank" rel="noopener">Facebook</a><% } %>
+    </div>
+  </div>
+</section>
+
+<% if (testimonies.length) { %>
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">Stories of Faith</p><h2>Testimonies</h2></div><a href="/testimonies">Read more &amp; share yours &rarr;</a></div>
+    <div class="grid grid-3">
+      <% testimonies.forEach((t) => { %><%- include('../partials/testimony-card', { t }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (photos.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">Moments</p><h2>Gallery</h2></div><a href="/gallery">View gallery &rarr;</a></div>
+    <div class="gallery-grid gallery-mini">
+      <% photos.forEach((p) => { %><a href="/gallery"><img src="<%= u.mediaUrl(p.image) %>" alt="<%= p.caption || '' %>" loading="lazy"></a><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section give-cta">
+  <div class="container split split-center">
+    <div>
+      <h2>Partner with us in ministry</h2>
+      <p><%= s.givingVerse %></p>
+    </div>
+    <div class="cta-actions"><a class="btn btn-accent" href="/give">Give via M-Pesa</a></div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

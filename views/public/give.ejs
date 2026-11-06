@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Give', sub: s.givingVerse }) %>
+<section class="section">
+  <div class="container narrow">
+    <% u.paragraphs(s.givingText).forEach((p) => { %><p class="lead-dark center"><%= p %></p><% }) %>
+    <div class="grid <%= s.mpesaPaybill && s.mpesaTill ? 'grid-2' : '' %> give-grid">
+      <% if (s.mpesaPaybill) { %>
+        <div class="give-card">
+          <div class="mpesa">M-PESA Paybill</div>
+          <ol>
+            <li>Go to <strong>M-PESA</strong> &rarr; <strong>Lipa na M-PESA</strong> &rarr; <strong>Pay Bill</strong></li>
+            <li>Business number: <strong class="copy" data-copy="<%= s.mpesaPaybill %>"><%= s.mpesaPaybill %></strong></li>
+            <li>Account number: <strong><%= s.mpesaAccount %></strong></li>
+            <li>Enter amount and your M-PESA PIN</li>
+          </ol>
+        </div>
+      <% } %>
+      <% if (s.mpesaTill) { %>
+        <div class="give-card">
+          <div class="mpesa">M-PESA Buy Goods</div>
+          <ol>
+            <li>Go to <strong>M-PESA</strong> &rarr; <strong>Lipa na M-PESA</strong> &rarr; <strong>Buy Goods and Services</strong></li>
+            <li>Till number: <strong class="copy" data-copy="<%= s.mpesaTill %>"><%= s.mpesaTill %></strong></li>
+            <li>Enter amount and your M-PESA PIN</li>
+          </ol>
+        </div>
+      <% } %>
+    </div>
+    <% if (s.bankDetails) { %>
+      <div class="give-card"><h3>Bank transfer</h3><% u.lines(s.bankDetails).forEach((l) => { %><p><%= l %></p><% }) %></div>
+    <% } %>
+    <p class="center muted">For questions about giving, <a href="/contact">contact the church office</a>.</p>
+  </div>
+</section>
+<%- include('../partials/footer') %>

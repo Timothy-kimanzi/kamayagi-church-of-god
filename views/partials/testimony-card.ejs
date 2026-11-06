@@ -1,0 +1,7 @@
+<figure class="testimony">
+  <blockquote>“<%= typeof full !== 'undefined' && full ? t.story : u.excerpt(t.story, 260) %>”</blockquote>
+  <figcaption>
+    <% if (t.photo) { %><img src="<%= u.mediaUrl(t.photo) %>" alt=""><% } else { %><span class="avatar"><%= (t.name || '?').charAt(0) %></span><% } %>
+    <div><strong><%= t.name %></strong><% if (t.title) { %><span><%= t.title %></span><% } %></div>
+  </figcaption>
+</figure>

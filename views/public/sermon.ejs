@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow">
+    <a href="/sermons" class="back">&larr; All sermons</a>
+    <h1><%= sermon.title %></h1>
+    <p class="meta"><%= u.formatDate(sermon.date) %><%= sermon.preacher ? ' · ' + sermon.preacher : '' %><%= sermon.scripture ? ' · ' + sermon.scripture : '' %></p>
+    <% const embed = u.videoEmbed(sermon.videoUrl); %>
+    <% if (embed) { %>
+      <div class="video"><iframe src="<%= embed %>" title="<%= sermon.title %>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+    <% } else if (sermon.image) { %><img class="rounded-img" src="<%= u.mediaUrl(sermon.image) %>" alt=""><% } %>
+    <% if (sermon.audioUrl) { %><audio controls src="<%= sermon.audioUrl %>" class="audio"></audio><% } %>
+    <% if (sermon.videoUrl && !embed) { %><p><a class="btn btn-primary" href="<%= sermon.videoUrl %>" target="_blank" rel="noopener">Watch sermon</a></p><% } %>
+    <% u.paragraphs(sermon.summary).forEach((p) => { %><p><%= p %></p><% }) %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

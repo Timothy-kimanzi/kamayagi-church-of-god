@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title><%= title %> | Admin | <%= s.churchName %></title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin">
+<% if (typeof userName !== 'undefined') { %>
+<aside class="sidebar">
+  <div class="sb-brand">
+    <% if (s.logo) { %><img src="<%= u.mediaUrl(s.logo) %>" alt=""><% } %>
+    <span><%= s.churchName %><small>Admin panel</small></span>
+  </div>
+  <nav>
+    <a href="/admin" class="<%= section === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+    <div class="sb-title">Website content</div>
+    <% Object.entries(resources).forEach(([k, r]) => { %>
+      <a href="/admin/r/<%= k %>" class="<%= section === k ? 'active' : '' %>"><%= r.label %><% if (k === 'testimonies' && badges.testimonies) { %><span class="badge"><%= badges.testimonies %></span><% } %></a>
+    <% }) %>
+    <a href="/admin/messages" class="<%= section === 'messages' ? 'active' : '' %>">Messages<% if (badges.messages) { %><span class="badge"><%= badges.messages %></span><% } %></a>
+    <div class="sb-title">Settings</div>
+    <% settingGroups.forEach((g) => { %>
+      <a href="/admin/settings/<%= g.id %>" class="<%= section === 'settings-' + g.id ? 'active' : '' %>"><%= g.label %></a>
+    <% }) %>
+    <a href="/admin/admins" class="<%= section === 'admins' ? 'active' : '' %>">Admins &amp; Password</a>
+  </nav>
+  <div class="sb-foot">
+    <a href="/" target="_blank">View website ↗</a>
+    <form method="post" action="/admin/logout"><input type="hidden" name="_csrf" value="<%= csrf %>"><button>Log out (<%= userName %>)</button></form>
+  </div>
+</aside>
+<button class="sb-toggle" aria-label="Menu">☰</button>
+<% } %>
+<main class="content">
+<% if (flash) { %><div class="alert alert-<%= flash.type %>"><%= flash.message %></div><% } %>

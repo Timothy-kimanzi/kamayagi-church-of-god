@@ -1,0 +1,12 @@
+<a class="card event-card" href="/events/<%= event._id %>">
+  <div class="date-badge">
+    <span class="day"><%= u.formatDate(event.startDate, { day: 'numeric' }) %></span>
+    <span class="month"><%= u.formatDate(event.startDate, { month: 'short' }) %></span>
+  </div>
+  <div class="card-body">
+    <h3><%= event.title %></h3>
+    <div class="meta"><%= u.formatDate(event.startDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %><%= event.endDate ? ' – ' + u.formatDate(event.endDate) : '' %></div>
+    <% if (event.time || event.location) { %><div class="meta"><%= [event.time, event.location].filter(Boolean).join(' · ') %></div><% } %>
+    <p><%= u.excerpt(event.description, 120) %></p>
+  </div>
+</a>

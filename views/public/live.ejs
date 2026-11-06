@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Watch Live', sub: s.liveSchedule }) %>
+<% const ytLive = u.youtubeId(s.youtubeLiveUrl); const ytEmbed = ytLive ? `https://www.youtube-nocookie.com/embed/${ytLive}` : (/^UC[\w-]{22}$/.test(s.youtubeChannelId || '') ? `https://www.youtube.com/embed/live_stream?channel=${s.youtubeChannelId}` : null); %>
+<section class="section">
+  <div class="container">
+    <% if (s.isLive) { %><div class="live-status"><span class="live-dot"></span> We are live right now!</div><% } else { %><div class="live-status off">We are not live at the moment. Join us <%= s.liveSchedule %>, or watch our recent services below.</div><% } %>
+    <div class="grid <%= ytEmbed && s.facebookLiveUrl ? 'grid-2' : '' %> live-grid">
+      <% if (ytEmbed) { %>
+        <div>
+          <h2 class="platform yt">YouTube</h2>
+          <div class="video"><iframe src="<%= ytEmbed %>" title="YouTube live stream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+        </div>
+      <% } %>
+      <% if (s.facebookLiveUrl) { %>
+        <div>
+          <h2 class="platform fb">Facebook</h2>
+          <div class="video"><iframe src="<%= u.facebookEmbed(s.facebookLiveUrl) %>" title="Facebook live stream" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>
+        </div>
+      <% } %>
+    </div>
+    <% if (!ytEmbed && !s.facebookLiveUrl) { %><p class="empty">The live stream will appear here when it starts.</p><% } %>
+    <div class="platform-links">
+      <% if (s.youtubeLiveUrl || s.youtubeUrl) { %><a class="btn btn-yt" href="<%= s.youtubeLiveUrl || s.youtubeUrl %>" target="_blank" rel="noopener">Open on YouTube</a><% } %>
+      <% if (s.facebookLiveUrl || s.facebookUrl) { %><a class="btn btn-fb" href="<%= s.facebookLiveUrl || s.facebookUrl %>" target="_blank" rel="noopener">Open on Facebook</a><% } %>
+      <% if (s.otherLiveUrl) { %><a class="btn btn-primary" href="<%= s.otherLiveUrl %>" target="_blank" rel="noopener"><%= s.otherLiveLabel %></a><% } %>
+      <a class="btn btn-outline-dark" href="/sermons">Past sermons</a>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

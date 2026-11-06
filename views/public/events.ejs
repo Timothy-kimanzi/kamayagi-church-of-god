@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Events', sub: 'Join us for fellowship, worship and outreach.' }) %>
+<section class="section">
+  <div class="container">
+    <h2>Upcoming</h2>
+    <% if (events.length) { %>
+      <div class="grid grid-3"><% events.forEach((event) => { %><%- include('../partials/event-card', { event }) %><% }) %></div>
+    <% } else { %><p class="empty">No upcoming events right now. Check back soon!</p><% } %>
+    <% if (past.length) { %>
+      <h2 class="mt">Past Events</h2>
+      <div class="grid grid-3 muted-cards"><% past.forEach((event) => { %><%- include('../partials/event-card', { event }) %><% }) %></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

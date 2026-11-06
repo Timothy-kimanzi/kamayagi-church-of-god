@@ -1,0 +1,32 @@
+<%- include('../partials/admin-header') %>
+<h1>Admins &amp; Password</h1>
+<div class="cols">
+  <div class="panel">
+    <h2>Admin accounts</h2>
+    <table class="list"><tbody>
+      <% users.forEach((usr) => { %>
+        <tr><td><%= usr.name || '—' %></td><td><%= usr.email %></td>
+          <td class="row-actions"><% if (String(usr._id) !== me) { %><form method="post" action="/admin/admins/<%= usr._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link danger">Remove</button></form><% } else { %><span class="muted">You</span><% } %></td></tr>
+      <% }) %>
+    </tbody></table>
+    <h3>Add an admin</h3>
+    <form method="post" action="/admin/admins" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field"><label>Name</label><input name="name"></div>
+      <div class="field"><label>Email</label><input name="email" type="email" required></div>
+      <div class="field"><label>Password (min 8 characters)</label><input name="password" type="password" minlength="8" required></div>
+      <button class="btn">Add admin</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Change my password</h2>
+    <form method="post" action="/admin/account/password" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field"><label>Current password</label><input name="current" type="password" required></div>
+      <div class="field"><label>New password</label><input name="password" type="password" minlength="8" required></div>
+      <div class="field"><label>Confirm new password</label><input name="confirm" type="password" minlength="8" required></div>
+      <button class="btn">Change password</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/admin-footer') %>
