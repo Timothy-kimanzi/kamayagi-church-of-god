@@ -1,0 +1,19 @@
+<%- include('../partials/admin-header') %>
+<% const mine = String(account._id) === me; %>
+<div class="head"><h1>Edit admin: <%= account.name || account.email %></h1><a href="/admin/admins">&larr; All admins</a></div>
+<div class="panel">
+  <form method="post" action="/admin/admins/<%= account._id %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="form-cols">
+      <div class="field"><label>Name</label><input name="name" value="<%= account.name %>"></div>
+      <div class="field"><label>Email</label><input value="<%= account.email %>" disabled></div>
+      <div class="field"><label>Set a new password (optional)</label><input name="password" type="password" minlength="8" placeholder="Leave empty to keep the current one"></div>
+    </div>
+    <div class="field"><label>Access</label>
+      <% if (mine) { %><p class="muted small">You are the super admin. You cannot remove your own super admin rights.</p><% } %>
+      <%- include('../partials/permissions', { selected: account.permissions, isSuperChecked: account.isSuper, lockSuper: mine }) %>
+    </div>
+    <button class="btn">Save</button>
+  </form>
+</div>
+<%- include('../partials/admin-footer') %>

@@ -2,8 +2,14 @@ const bcrypt = require('bcryptjs');
 const M = require('./models');
 const { seedSettings } = require('./settings');
 
+async function ensureSuperAdmin() {
+  if (await M.User.exists({ isSuper: true })) return;
+  const first = await M.User.findOne().sort({ createdAt: 1 });
+  if (first) await M.User.updateOne({ _id: first._id }, { isSuper: true });
+}
+
 async function seedAdmin() {
-  if (await M.User.countDocuments()) return;
+  if (await M.User.countDocuments()) return ensureSuperAdmin();
   let email = process.env.ADMIN_EMAIL;
   let password = process.env.ADMIN_PASSWORD;
   if (!email || !password) {
@@ -14,7 +20,7 @@ async function seedAdmin() {
     password = 'admin123';
     console.log(`Created development admin: ${email} / ${password}`);
   }
-  await M.User.create({ name: 'Administrator', email, passwordHash: await bcrypt.hash(password, 12) });
+  await M.User.create({ name: 'Administrator', email, isSuper: true, passwordHash: await bcrypt.hash(password, 12) });
 }
 
 async function migrateMessages() {

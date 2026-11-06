@@ -1,32 +1,47 @@
 <%- include('../partials/admin-header') %>
-<h1>Admins &amp; Password</h1>
-<div class="cols">
-  <div class="panel">
-    <h2>Admin accounts</h2>
-    <table class="list"><tbody>
-      <% users.forEach((usr) => { %>
-        <tr><td><%= usr.name || '—' %></td><td><%= usr.email %></td>
-          <td class="row-actions"><% if (String(usr._id) !== me) { %><form method="post" action="/admin/admins/<%= usr._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link danger">Remove</button></form><% } else { %><span class="muted">You</span><% } %></td></tr>
-      <% }) %>
-    </tbody></table>
-    <h3>Add an admin</h3>
-    <form method="post" action="/admin/admins" class="form">
-      <input type="hidden" name="_csrf" value="<%= csrf %>">
+<h1><%= isSuper ? 'Admins & Password' : 'My Account' %></h1>
+<% if (isSuper) { %>
+<div class="panel">
+  <h2>Admin accounts</h2>
+  <table class="list">
+    <thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead>
+    <tbody>
+    <% users.forEach((usr) => { const mine = String(usr._id) === me; %>
+      <tr>
+        <td><%= usr.name || '—' %></td>
+        <td><%= usr.email %></td>
+        <td><% if (usr.isSuper) { %><span class="pill on">Super admin</span><% } else if ((usr.permissions || []).length) { %><span class="small"><%= usr.permissions.map((k) => perms.labels[k]).filter(Boolean).join(', ') %></span><% } else { %><span class="muted small">No access yet</span><% } %></td>
+        <td class="row-actions">
+          <a href="/admin/admins/<%= usr._id %>">Edit access</a>
+          <% if (!mine) { %><form method="post" action="/admin/admins/<%= usr._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link danger">Remove</button></form><% } else { %><span class="muted">You</span><% } %>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<div class="panel">
+  <h2>Add an admin</h2>
+  <form method="post" action="/admin/admins" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="form-cols">
       <div class="field"><label>Name</label><input name="name"></div>
       <div class="field"><label>Email</label><input name="email" type="email" required></div>
       <div class="field"><label>Password (min 8 characters)</label><input name="password" type="password" minlength="8" required></div>
-      <button class="btn">Add admin</button>
-    </form>
-  </div>
-  <div class="panel">
-    <h2>Change my password</h2>
-    <form method="post" action="/admin/account/password" class="form">
-      <input type="hidden" name="_csrf" value="<%= csrf %>">
-      <div class="field"><label>Current password</label><input name="current" type="password" required></div>
-      <div class="field"><label>New password</label><input name="password" type="password" minlength="8" required></div>
-      <div class="field"><label>Confirm new password</label><input name="confirm" type="password" minlength="8" required></div>
-      <button class="btn">Change password</button>
-    </form>
-  </div>
+    </div>
+    <div class="field"><label>Access</label><%- include('../partials/permissions', { selected: [], isSuperChecked: false, lockSuper: false }) %></div>
+    <button class="btn">Add admin</button>
+  </form>
+</div>
+<% } %>
+<div class="panel narrow-panel">
+  <h2>Change my password</h2>
+  <form method="post" action="/admin/account/password" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="field"><label>Current password</label><input name="current" type="password" required></div>
+    <div class="field"><label>New password</label><input name="password" type="password" minlength="8" required></div>
+    <div class="field"><label>Confirm new password</label><input name="confirm" type="password" minlength="8" required></div>
+    <button class="btn">Change password</button>
+  </form>
 </div>
 <%- include('../partials/admin-footer') %>

@@ -13,6 +13,8 @@ const UserSchema = new Schema(
     name: String,
     email: { type: String, unique: true, lowercase: true, trim: true },
     passwordHash: String,
+    isSuper: { type: Boolean, default: false },
+    permissions: { type: [String], default: [] },
   },
   { timestamps: true }
 );

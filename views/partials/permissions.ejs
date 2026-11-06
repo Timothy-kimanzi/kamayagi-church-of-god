@@ -1,0 +1,15 @@
+<% const has = (k) => (selected || []).includes(k); %>
+<div class="perm-box">
+  <label class="check"><input type="checkbox" name="isSuper" class="super-toggle" <%= isSuperChecked ? 'checked' : '' %> <%= lockSuper ? 'disabled' : '' %>> <strong>Super admin</strong> &mdash; full access to everything, including managing admins</label>
+  <div class="perm-areas">
+    <p class="muted small">Or choose what this admin can open and change:</p>
+    <% perms.areas.forEach((a) => { %>
+      <fieldset class="perm-area">
+        <legend><%= a.title %></legend>
+        <% a.items.forEach((i) => { %>
+          <label class="check"><input type="checkbox" name="permissions" value="<%= i.key %>" <%= has(i.key) ? 'checked' : '' %>> <%= i.label %></label>
+        <% }) %>
+      </fieldset>
+    <% }) %>
+  </div>
+</div>

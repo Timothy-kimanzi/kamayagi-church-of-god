@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const M = require('../models');
 const resources = require('../resources');
 const settings = require('../settings');
+const perms = require('../permissions');
 const { verifyCsrf, requireAdmin, flash } = require('../security');
 const { saveImage, deleteImage, safeUrl } = require('../utils');
 
@@ -53,25 +54,37 @@ router.post('/logout', (req, res) => {
 router.use(requireAdmin);
 
 router.use(async (req, res, next) => {
+  const user = isId(req.session.userId || '') ? await M.User.findById(req.session.userId).lean() : null;
+  if (!user) return req.session.destroy(() => res.redirect('/admin/login'));
+  req.user = user;
+  const can = (key) => perms.can(user, key);
+  const count = (key, model, filter) => (can(key) ? model.countDocuments(filter) : 0);
   const [unread, prayers, pending] = await Promise.all([
-    M.Message.countDocuments({ kind: { $ne: 'prayer' }, read: false }),
-    M.Message.countDocuments({ kind: 'prayer', read: false }),
-    M.Testimony.countDocuments({ approved: false }),
+    count('messages', M.Message, { kind: { $ne: 'prayer' }, read: false }),
+    count('prayers', M.Message, { kind: 'prayer', read: false }),
+    count('testimonies', M.Testimony, { approved: false }),
   ]);
   res.locals.badges = { messages: unread, prayers, testimonies: pending };
-  res.locals.resources = resources;
-  res.locals.settingGroups = settings.groups;
-  res.locals.userName = req.session.userName;
+  res.locals.can = can;
+  res.locals.isSuper = Boolean(user.isSuper);
+  res.locals.resources = Object.fromEntries(Object.entries(resources).filter(([k]) => can(k)));
+  res.locals.settingGroups = settings.groups.filter((g) => can(`settings-${g.id}`));
+  res.locals.userName = user.name || user.email;
   next();
 });
 
+function deny(req, res) {
+  flash(req, 'error', 'You do not have permission to open that page. Ask the super admin for access.');
+  res.redirect('/admin');
+}
+const need = (key) => (req, res, next) => (perms.can(req.user, key) ? next() : deny(req, res));
+const superOnly = (req, res, next) => (req.user.isSuper ? next() : deny(req, res));
+
 router.get('/', async (req, res) => {
   const counts = {};
-  await Promise.all(Object.entries(resources).map(async ([k, r]) => (counts[k] = await r.model.countDocuments())));
-  const [messages, prayers] = await Promise.all([
-    M.Message.find({ kind: { $ne: 'prayer' } }).sort({ createdAt: -1 }).limit(5).lean(),
-    M.Message.find({ kind: 'prayer' }).sort({ createdAt: -1 }).limit(5).lean(),
-  ]);
+  await Promise.all(Object.entries(res.locals.resources).map(async ([k, r]) => (counts[k] = await r.model.countDocuments())));
+  const recent = (key, filter) => (perms.can(req.user, key) ? M.Message.find(filter).sort({ createdAt: -1 }).limit(5).lean() : null);
+  const [messages, prayers] = await Promise.all([recent('messages', { kind: { $ne: 'prayer' } }), recent('prayers', { kind: 'prayer' })]);
   res.render('admin/dashboard', { title: 'Dashboard', counts, messages, prayers, section: 'dashboard' });
 });
 
@@ -116,7 +129,12 @@ function missingRequired(fields, doc) {
 }
 
 // Settings
-router.get('/settings', (req, res) => res.redirect(`/admin/settings/${settings.groups[0].id}`));
+router.get('/settings', (req, res) => {
+  const first = res.locals.settingGroups[0];
+  return first ? res.redirect(`/admin/settings/${first.id}`) : deny(req, res);
+});
+
+router.use('/settings/:group', (req, res, next) => need(`settings-${req.params.group}`)(req, res, next));
 
 router.get('/settings/:group', async (req, res, next) => {
   const group = settings.groups.find((g) => g.id === req.params.group);
@@ -137,6 +155,7 @@ router.post('/settings/:group', async (req, res, next) => {
 // Generic content resources
 router.param('resource', (req, res, next, key) => {
   if (!Object.hasOwn(resources, key)) return res.status(404).render('public/404', { layout: 'admin', title: 'Not found' });
+  if (!perms.can(req.user, key)) return deny(req, res);
   req.resource = resources[key];
   res.locals.resourceKey = key;
   res.locals.section = key;
@@ -224,6 +243,7 @@ const inboxes = {
 Object.entries(inboxes).forEach(([key, box]) => {
   const base = `/admin/${key}`;
   const find = (id) => M.Message.findOne({ _id: id, ...box.filter });
+  router.use(`/${key}`, need(key));
 
   router.get(`/${key}`, async (req, res) => {
     const messages = await M.Message.find(box.filter).sort({ createdAt: -1 }).lean();
@@ -254,13 +274,13 @@ Object.entries(inboxes).forEach(([key, box]) => {
   });
 });
 
-// Admin accounts
+// Admin accounts (only the super admin can manage other admins)
 router.get('/admins', async (req, res) => {
-  const users = await M.User.find().sort({ createdAt: 1 }).lean();
-  res.render('admin/admins', { title: 'Admin Accounts', users, me: req.session.userId, section: 'admins' });
+  const users = req.user.isSuper ? await M.User.find().sort({ createdAt: 1 }).lean() : [];
+  res.render('admin/admins', { title: 'Admin Accounts', users, me: String(req.user._id), perms, section: 'admins' });
 });
 
-router.post('/admins', async (req, res) => {
+router.post('/admins', superOnly, async (req, res) => {
   const email = String(req.body.email || '').toLowerCase().trim();
   const password = String(req.body.password || '');
   if (!email || password.length < 8) {
@@ -271,14 +291,46 @@ router.post('/admins', async (req, res) => {
     flash(req, 'error', 'An admin with that email already exists.');
     return res.redirect('/admin/admins');
   }
-  await M.User.create({ name: String(req.body.name || '').trim(), email, passwordHash: await bcrypt.hash(password, 12) });
+  await M.User.create({
+    name: String(req.body.name || '').trim(),
+    email,
+    isSuper: req.body.isSuper === 'on',
+    permissions: perms.clean(req.body.permissions),
+    passwordHash: await bcrypt.hash(password, 12),
+  });
   flash(req, 'success', 'Admin account created.');
   res.redirect('/admin/admins');
 });
 
-router.post('/admins/:id/delete', async (req, res, next) => {
+router.get('/admins/:id', superOnly, async (req, res, next) => {
   if (!isId(req.params.id)) return next();
-  if (req.params.id === req.session.userId) {
+  const account = await M.User.findById(req.params.id).lean();
+  if (!account) return next();
+  res.render('admin/admin-edit', { title: 'Edit Admin', account, me: String(req.user._id), perms, section: 'admins' });
+});
+
+router.post('/admins/:id', superOnly, async (req, res, next) => {
+  if (!isId(req.params.id)) return next();
+  const account = await M.User.findById(req.params.id);
+  if (!account) return next();
+  const isMe = String(account._id) === String(req.user._id);
+  const password = String(req.body.password || '');
+  if (password && password.length < 8) {
+    flash(req, 'error', 'The new password must be at least 8 characters.');
+    return res.redirect(`/admin/admins/${account._id}`);
+  }
+  account.name = String(req.body.name || '').trim();
+  if (!isMe) account.isSuper = req.body.isSuper === 'on';
+  account.permissions = perms.clean(req.body.permissions);
+  if (password) account.passwordHash = await bcrypt.hash(password, 12);
+  await account.save();
+  flash(req, 'success', 'Admin account saved.');
+  res.redirect('/admin/admins');
+});
+
+router.post('/admins/:id/delete', superOnly, async (req, res, next) => {
+  if (!isId(req.params.id)) return next();
+  if (req.params.id === String(req.user._id)) {
     flash(req, 'error', 'You cannot delete your own account.');
     return res.redirect('/admin/admins');
   }
@@ -288,7 +340,7 @@ router.post('/admins/:id/delete', async (req, res, next) => {
 });
 
 router.post('/account/password', async (req, res) => {
-  const user = await M.User.findById(req.session.userId);
+  const user = await M.User.findById(req.user._id);
   const { current, password, confirm } = req.body;
   if (!user || !(await bcrypt.compare(String(current || ''), user.passwordHash))) {
     flash(req, 'error', 'Current password is wrong.');
