@@ -1,6 +1,6 @@
 <%- include('../partials/admin-header') %>
 <div class="login">
-  <form method="post" action="/admin/login" class="panel">
+  <form method="post" action="/admin/login" class="panel" id="login-form">
     <% if (s.logo) { %><img src="<%= u.mediaUrl(s.logo) %>" alt="" class="login-logo"><% } %>
     <h1><%= s.churchName %></h1>
     <p class="muted">Admin login</p>

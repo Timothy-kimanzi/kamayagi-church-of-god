@@ -12,7 +12,17 @@ function verifyCsrf(req, res, next) {
   res.status(403).send('Your session expired. Please go back, refresh the page and try again.');
 }
 
+const RELOAD_GRACE_MS = 4000;
+
 function requireAdmin(req, res, next) {
+  const { leftAt } = req.session;
+  if (leftAt) {
+    delete req.session.leftAt;
+    if (Date.now() - leftAt > RELOAD_GRACE_MS) {
+      delete req.session.userId;
+      delete req.session.userName;
+    }
+  }
   if (req.session.userId) return next();
   res.redirect(`/admin/login?next=${encodeURIComponent(req.originalUrl)}`);
 }

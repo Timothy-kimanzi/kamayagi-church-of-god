@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex">
   <title><%= title %> | Admin | <%= s.churchName %></title>
   <link rel="stylesheet" href="/css/admin.css">
+  <meta name="csrf" content="<%= csrf %>">
 </head>
 <body class="admin">
 <% if (typeof userName !== 'undefined') { %>

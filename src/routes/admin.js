@@ -19,6 +19,7 @@ const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHe
 const isId = (id) => /^[a-f0-9]{24}$/.test(id);
 
 router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
   res.locals.layout = 'admin';
   if (req.method === 'POST' && req.is('multipart/form-data')) return upload.any()(req, res, next);
   next();
@@ -49,6 +50,11 @@ router.post('/login', loginLimiter, async (req, res) => {
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/admin/login'));
+});
+
+router.post('/leave', (req, res) => {
+  if (req.session.userId) req.session.leftAt = Date.now();
+  res.status(204).end();
 });
 
 router.use(requireAdmin);

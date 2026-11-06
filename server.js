@@ -60,7 +60,7 @@ app.use(
     saveUninitialized: false,
     rolling: true,
     store: MongoStore.create({ mongoUrl: MONGODB_URI, ttl: SESSION_IDLE_MINUTES * 60 }),
-    cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: SESSION_IDLE_MINUTES * 60 * 1000 },
+    cookie: { httpOnly: true, sameSite: 'lax', secure: isProd },
   })
 );
 
@@ -71,6 +71,15 @@ app.get('/media/:id', async (req, res, next) => {
   res.set('Content-Type', img.contentType);
   res.set('Cache-Control', 'public, max-age=31536000, immutable');
   res.send(img.data.buffer ? Buffer.from(img.data.buffer) : img.data);
+});
+
+app.use((req, res, next) => {
+  if (req.session.userId && req.method === 'GET' && !req.path.startsWith('/admin') && req.path !== '/healthz') {
+    delete req.session.userId;
+    delete req.session.userName;
+    delete req.session.leftAt;
+  }
+  next();
 });
 
 app.use(async (req, res, next) => {
