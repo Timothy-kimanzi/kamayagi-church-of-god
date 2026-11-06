@@ -6,15 +6,26 @@ All text, photos, service times, sermons, events, ministries, testimonies, givin
 
 ## Pages
 
-Home · About Us · Service Times · Ministries · Sermons · Events · Testimonies · Gallery · Watch Live (YouTube + Facebook) · Give (M-Pesa) · Contact
+Home · About Us · Service Times · Ministries · Sermons · Events · Testimonies · Gallery · Watch Live (YouTube + Facebook) · Give (M-Pesa) · Contact · Prayer Request
 
 ## Admin panel (`/admin`)
 
 - **Website content:** service times, sermons, events, ministries, testimonies (approve visitor submissions), photo gallery, church leaders
 - **Settings:** church name, logo, colors, home page text and banner, about page, pastor, contact details and map, M-Pesa giving, live streaming, social media links
 - **Go live button:** shows a "We are LIVE" banner across the site
-- **Messages:** contact form messages and prayer requests
-- **Admins:** add or remove admin accounts, change password
+- **Prayer Requests:** requests sent from the Prayer Request page, with "keep private" and "please call me" flags and a *Mark as prayed for* button
+- **Messages:** contact form messages
+- **Admins & Password:** add or remove admin accounts, change password
+
+### Admin access levels
+
+- The first admin is the **super admin** and can do everything.
+- Only a super admin can add admins and choose what each one may use (each content type, Prayer Requests, Messages, and each Settings section). Areas an admin is not given are hidden from their menu and blocked.
+
+### Login security
+
+- An admin must log in again after leaving the admin panel: opening the public website, going to another site, closing the tab or browser, or opening the admin panel in a new tab.
+- Admins are also logged out after 30 minutes without activity, or straight away with **Log out**.
 
 ## Run locally
 
