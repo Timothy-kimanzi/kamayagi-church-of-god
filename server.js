@@ -15,6 +15,7 @@ const utils = require('./src/utils');
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/kamayagi';
 const isProd = process.env.NODE_ENV === 'production';
+const SESSION_IDLE_MINUTES = 30;
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -57,8 +58,9 @@ app.use(
     secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: MONGODB_URI, ttl: 7 * 24 * 3600 }),
-    cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: 7 * 24 * 3600 * 1000 },
+    rolling: true,
+    store: MongoStore.create({ mongoUrl: MONGODB_URI, ttl: SESSION_IDLE_MINUTES * 60 }),
+    cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: SESSION_IDLE_MINUTES * 60 * 1000 },
   })
 );
 
