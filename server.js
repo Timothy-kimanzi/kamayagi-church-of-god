@@ -87,7 +87,7 @@ app.use((req, res, next) => {
     return csrfToken(req, res, next);
   }
   if (req.session.csrf) res.locals.csrf = req.session.csrf;
-  else if (/^\/(contact|testimonies)/.test(req.path)) return csrfToken(req, res, next);
+  else if (/^\/(contact|testimonies|prayer)/.test(req.path)) return csrfToken(req, res, next);
   next();
 });
 

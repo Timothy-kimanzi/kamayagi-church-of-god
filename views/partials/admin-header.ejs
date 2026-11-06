@@ -20,6 +20,7 @@
     <% Object.entries(resources).forEach(([k, r]) => { %>
       <a href="/admin/r/<%= k %>" class="<%= section === k ? 'active' : '' %>"><%= r.label %><% if (k === 'testimonies' && badges.testimonies) { %><span class="badge"><%= badges.testimonies %></span><% } %></a>
     <% }) %>
+    <a href="/admin/prayers" class="<%= section === 'prayers' ? 'active' : '' %>">Prayer Requests<% if (badges.prayers) { %><span class="badge"><%= badges.prayers %></span><% } %></a>
     <a href="/admin/messages" class="<%= section === 'messages' ? 'active' : '' %>">Messages<% if (badges.messages) { %><span class="badge"><%= badges.messages %></span><% } %></a>
     <div class="sb-title">Settings</div>
     <% settingGroups.forEach((g) => { %>

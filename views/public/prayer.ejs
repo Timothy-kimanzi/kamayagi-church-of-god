@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<%- include('../partials/page-hero', { heading: 'Prayer Request', sub: 'We would be honoured to pray with you.' }) %>
+<section class="section">
+  <div class="container narrow">
+    <p class="center"><%= s.prayerIntro %></p>
+    <form class="form card-form" method="post" action="/prayer" id="form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label>Your name<input name="name" required maxlength="100"></label>
+      <div class="form-row">
+        <label>Phone (optional)<input name="phone" maxlength="30"></label>
+        <label>Email (optional)<input name="email" type="email" maxlength="150"></label>
+      </div>
+      <label>Your prayer request<textarea name="message" rows="6" required maxlength="5000"></textarea></label>
+      <label class="check"><input type="checkbox" name="confidential" value="1"> Please keep this request private (pastors only)</label>
+      <label class="check"><input type="checkbox" name="wantsCall" value="1"> I would like someone to call or contact me</label>
+      <button class="btn btn-primary">Send prayer request</button>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

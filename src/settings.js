@@ -59,6 +59,7 @@ const groups = [
       { name: 'whatsapp', label: 'WhatsApp number', type: 'text', help: 'International format, e.g. 254700000000', default: '' },
       { name: 'email', label: 'Email', type: 'text', default: 'info@kamayagichurch.org' },
       { name: 'officeHours', label: 'Office hours', type: 'text', default: 'Mon - Fri, 9:00 AM - 4:00 PM' },
+      { name: 'prayerIntro', label: 'Prayer request page text', type: 'textarea', default: 'Whatever you are going through, you are not alone. Send us your prayer request and our pastors and prayer team will stand with you in prayer.' },
       { name: 'mapQuery', label: 'Google Maps location', type: 'text', help: 'Place name or coordinates (e.g. -0.6, 38.2) shown on the map.', default: 'Kamayagi, Mwingi North, Kitui County, Kenya' },
     ],
   },

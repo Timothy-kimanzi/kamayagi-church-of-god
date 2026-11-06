@@ -53,11 +53,12 @@ router.post('/logout', (req, res) => {
 router.use(requireAdmin);
 
 router.use(async (req, res, next) => {
-  const [unread, pending] = await Promise.all([
-    M.Message.countDocuments({ read: false }),
+  const [unread, prayers, pending] = await Promise.all([
+    M.Message.countDocuments({ kind: { $ne: 'prayer' }, read: false }),
+    M.Message.countDocuments({ kind: 'prayer', read: false }),
     M.Testimony.countDocuments({ approved: false }),
   ]);
-  res.locals.badges = { messages: unread, testimonies: pending };
+  res.locals.badges = { messages: unread, prayers, testimonies: pending };
   res.locals.resources = resources;
   res.locals.settingGroups = settings.groups;
   res.locals.userName = req.session.userName;
@@ -67,8 +68,11 @@ router.use(async (req, res, next) => {
 router.get('/', async (req, res) => {
   const counts = {};
   await Promise.all(Object.entries(resources).map(async ([k, r]) => (counts[k] = await r.model.countDocuments())));
-  const messages = await M.Message.find().sort({ createdAt: -1 }).limit(5).lean();
-  res.render('admin/dashboard', { title: 'Dashboard', counts, messages, section: 'dashboard' });
+  const [messages, prayers] = await Promise.all([
+    M.Message.find({ kind: { $ne: 'prayer' } }).sort({ createdAt: -1 }).limit(5).lean(),
+    M.Message.find({ kind: 'prayer' }).sort({ createdAt: -1 }).limit(5).lean(),
+  ]);
+  res.render('admin/dashboard', { title: 'Dashboard', counts, messages, prayers, section: 'dashboard' });
 });
 
 async function applyFields(fields, body, files, doc) {
@@ -211,24 +215,43 @@ router.post('/r/:resource/:id/delete', async (req, res, next) => {
   res.redirect(`/admin/r/${res.locals.resourceKey}`);
 });
 
-// Messages
-router.get('/messages', async (req, res) => {
-  const messages = await M.Message.find().sort({ createdAt: -1 }).lean();
-  res.render('admin/messages', { title: 'Messages', messages, section: 'messages' });
-});
+// Messages and prayer requests
+const inboxes = {
+  messages: { filter: { kind: { $ne: 'prayer' } }, title: 'Messages', singular: 'Message', prayer: false },
+  prayers: { filter: { kind: 'prayer' }, title: 'Prayer Requests', singular: 'Prayer request', prayer: true },
+};
 
-router.get('/messages/:id', async (req, res, next) => {
-  if (!isId(req.params.id)) return next();
-  const message = await M.Message.findByIdAndUpdate(req.params.id, { read: true }, { new: true }).lean();
-  if (!message) return next();
-  res.render('admin/message', { title: 'Message', message, section: 'messages' });
-});
+Object.entries(inboxes).forEach(([key, box]) => {
+  const base = `/admin/${key}`;
+  const find = (id) => M.Message.findOne({ _id: id, ...box.filter });
 
-router.post('/messages/:id/delete', async (req, res, next) => {
-  if (!isId(req.params.id)) return next();
-  await M.Message.deleteOne({ _id: req.params.id });
-  flash(req, 'success', 'Message deleted.');
-  res.redirect('/admin/messages');
+  router.get(`/${key}`, async (req, res) => {
+    const messages = await M.Message.find(box.filter).sort({ createdAt: -1 }).lean();
+    res.render('admin/messages', { title: box.title, box, base, messages, section: key });
+  });
+
+  router.get(`/${key}/:id`, async (req, res, next) => {
+    if (!isId(req.params.id)) return next();
+    const message = await find(req.params.id);
+    if (!message) return next();
+    if (!message.read) await M.Message.updateOne({ _id: message._id }, { read: true });
+    res.render('admin/message', { title: box.singular, box, base, message: message.toObject(), section: key });
+  });
+
+  router.post(`/${key}/:id/prayed`, async (req, res, next) => {
+    if (!isId(req.params.id)) return next();
+    const message = await find(req.params.id);
+    if (!message) return next();
+    await M.Message.updateOne({ _id: message._id }, { prayed: !message.prayed });
+    res.redirect(req.body.back === 'list' ? base : `${base}/${message._id}`);
+  });
+
+  router.post(`/${key}/:id/delete`, async (req, res, next) => {
+    if (!isId(req.params.id)) return next();
+    await M.Message.deleteOne({ _id: req.params.id, ...box.filter });
+    flash(req, 'success', `${box.singular} deleted.`);
+    res.redirect(base);
+  });
 });
 
 // Admin accounts

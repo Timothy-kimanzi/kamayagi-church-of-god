@@ -1,15 +1,25 @@
 <%- include('../partials/admin-header') %>
-<h1>Messages &amp; Prayer Requests</h1>
+<h1><%= box.title %></h1>
+<% if (box.prayer) { %><p class="muted">Requests sent from the website's Prayer Request page. Open one to read it, then mark it as prayed for.</p><% } %>
 <div class="panel">
 <% if (messages.length) { %>
   <table class="list">
-    <thead><tr><th>From</th><th>Subject</th><th>Message</th><th>Date</th></tr></thead>
+    <thead><tr><th>From</th><% if (box.prayer) { %><th>Request</th><th>Status</th><% } else { %><th>Subject</th><th>Message</th><% } %><th>Date</th></tr></thead>
     <tbody>
       <% messages.forEach((m) => { %>
-        <tr class="<%= m.read ? '' : 'unread' %>"><td><a href="/admin/messages/<%= m._id %>"><%= m.name %></a></td><td><%= m.subject %></td><td><%= u.excerpt(m.message, 70) %></td><td class="muted"><%= u.formatDate(m.createdAt) %></td></tr>
+        <tr class="<%= m.read ? '' : 'unread' %>">
+          <td><a href="<%= base %>/<%= m._id %>"><%= m.name %></a><% if (m.confidential) { %> <span class="pill off" title="Asked to keep private">Private</span><% } %></td>
+          <% if (box.prayer) { %>
+            <td><%= u.excerpt(m.message, 70) %></td>
+            <td><form method="post" action="<%= base %>/<%= m._id %>/prayed" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="back" value="list"><button class="pill <%= m.prayed ? 'on' : 'off' %>" title="Click to change"><%= m.prayed ? 'Prayed for' : 'Not yet' %></button></form></td>
+          <% } else { %>
+            <td><%= m.subject %></td><td><%= u.excerpt(m.message, 70) %></td>
+          <% } %>
+          <td class="muted"><%= u.formatDate(m.createdAt) %></td>
+        </tr>
       <% }) %>
     </tbody>
   </table>
-<% } else { %><p class="muted">No messages yet. Messages sent from the Contact page will appear here.</p><% } %>
+<% } else { %><p class="muted"><%= box.prayer ? 'No prayer requests yet. Requests sent from the Prayer Request page will appear here.' : 'No messages yet. Messages sent from the Contact page will appear here.' %></p><% } %>
 </div>
 <%- include('../partials/admin-footer') %>

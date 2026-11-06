@@ -28,7 +28,7 @@ function mediaUrl(id) {
 
 function formatDate(d, opts = { day: 'numeric', month: 'long', year: 'numeric' }) {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('en-KE', { ...opts, timeZone: 'Africa/Nairobi' });
+  return new Date(d).toLocaleString('en-KE', { ...opts, timeZone: 'Africa/Nairobi' });
 }
 
 function formatTime(t) {

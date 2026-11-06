@@ -9,6 +9,7 @@
       <% if (s.whatsapp) { %><p><strong>WhatsApp</strong><br><a href="https://wa.me/<%= s.whatsapp.replace(/\D/g, '') %>" target="_blank" rel="noopener">Chat with us</a></p><% } %>
       <% if (s.email) { %><p><strong>Email</strong><br><a href="mailto:<%= s.email %>"><%= s.email %></a></p><% } %>
       <% if (s.officeHours) { %><p><strong>Office hours</strong><br><%= s.officeHours %></p><% } %>
+      <p><a class="btn btn-outline" href="/prayer">Send a prayer request</a></p>
     </div>
     <form class="form card-form" method="post" action="/contact" id="form">
       <input type="hidden" name="_csrf" value="<%= csrf %>">

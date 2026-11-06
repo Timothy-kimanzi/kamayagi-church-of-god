@@ -78,7 +78,18 @@ const Leader = new Schema(
 );
 
 const Message = new Schema(
-  { name: String, email: String, phone: String, subject: String, message: String, read: { type: Boolean, default: false } },
+  {
+    kind: { type: String, enum: ['message', 'prayer'], default: 'message', index: true },
+    name: String,
+    email: String,
+    phone: String,
+    subject: String,
+    message: String,
+    confidential: { type: Boolean, default: false },
+    wantsCall: { type: Boolean, default: false },
+    prayed: { type: Boolean, default: false },
+    read: { type: Boolean, default: false },
+  },
   opts
 );
 

@@ -20,6 +20,18 @@
   <% }) %>
 </div>
 <% if (badges.testimonies) { %><div class="alert alert-info"><%= badges.testimonies %> testimon<%= badges.testimonies === 1 ? 'y is' : 'ies are' %> waiting for approval. <a href="/admin/r/testimonies">Review now</a></div><% } %>
+<% if (badges.prayers) { %><div class="alert alert-info"><%= badges.prayers %> new prayer request<%= badges.prayers === 1 ? '' : 's' %>. <a href="/admin/prayers">Read now</a></div><% } %>
+<div class="panel">
+  <h2>Recent prayer requests</h2>
+  <% if (prayers.length) { %>
+    <table><tbody>
+      <% prayers.forEach((m) => { %>
+        <tr class="<%= m.read ? '' : 'unread' %>"><td><a href="/admin/prayers/<%= m._id %>"><%= m.name %></a></td><td><%= u.excerpt(m.message, 60) %></td><td><% if (m.prayed) { %><span class="pill on">Prayed for</span><% } %></td><td class="muted"><%= u.formatDate(m.createdAt) %></td></tr>
+      <% }) %>
+    </tbody></table>
+    <p><a href="/admin/prayers">All prayer requests &rarr;</a></p>
+  <% } else { %><p class="muted">No prayer requests yet.</p><% } %>
+</div>
 <div class="panel">
   <h2>Recent messages</h2>
   <% if (messages.length) { %>

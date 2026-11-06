@@ -17,6 +17,10 @@ async function seedAdmin() {
   await M.User.create({ name: 'Administrator', email, passwordHash: await bcrypt.hash(password, 12) });
 }
 
+async function migrateMessages() {
+  await M.Message.updateMany({ kind: { $exists: false }, subject: /prayer/i }, { kind: 'prayer' });
+}
+
 async function seedContent() {
   const flag = await M.Setting.findOne({ key: '_contentSeeded' });
   if (flag) return;
@@ -55,6 +59,7 @@ async function seed() {
   await seedSettings();
   await seedAdmin();
   await seedContent();
+  await migrateMessages();
 }
 
 module.exports = seed;

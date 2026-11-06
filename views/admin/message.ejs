@@ -1,10 +1,17 @@
 <%- include('../partials/admin-header') %>
-<div class="head"><h1><%= message.subject %></h1><a href="/admin/messages">&larr; All messages</a></div>
+<div class="head"><h1><%= box.prayer ? 'Prayer request' : message.subject %></h1><a href="<%= base %>">&larr; All <%= box.title.toLowerCase() %></a></div>
 <div class="panel">
   <p><strong><%= message.name %></strong> · <span class="muted"><%= u.formatDate(message.createdAt, { dateStyle: 'medium', timeStyle: 'short' }) %></span></p>
+  <% if (message.confidential) { %><div class="alert alert-info">This person asked for the request to be kept private.</div><% } %>
+  <% if (message.wantsCall) { %><div class="alert alert-info">This person would like someone to call or contact them.</div><% } %>
   <% if (message.phone) { %><p>Phone: <a href="tel:<%= message.phone %>"><%= message.phone %></a></p><% } %>
   <% if (message.email) { %><p>Email: <a href="mailto:<%= message.email %>"><%= message.email %></a></p><% } %>
   <div class="message-body"><%= message.message %></div>
-  <form method="post" action="/admin/messages/<%= message._id %>/delete" class="confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger">Delete message</button></form>
+  <div class="row-actions">
+    <% if (box.prayer) { %>
+      <form method="post" action="<%= base %>/<%= message._id %>/prayed" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn"><%= message.prayed ? 'Mark as not yet prayed for' : 'Mark as prayed for' %></button></form>
+    <% } %>
+    <form method="post" action="<%= base %>/<%= message._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger">Delete</button></form>
+  </div>
 </div>
 <%- include('../partials/admin-footer') %>

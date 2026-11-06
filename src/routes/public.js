@@ -98,6 +98,29 @@ router.get('/live', (req, res) => res.render('public/live', { page: 'live', titl
 router.get('/give', (req, res) => res.render('public/give', { page: 'give', title: 'Give' }));
 router.get('/contact', (req, res) => res.render('public/contact', { page: 'contact', title: 'Contact Us' }));
 
+router.get('/prayer', (req, res) => res.render('public/prayer', { page: 'prayer', title: 'Prayer Request' }));
+
+router.post('/prayer', formLimiter, verifyCsrf, async (req, res) => {
+  const { name, email, phone, message, website } = req.body;
+  if (website) return res.redirect('/prayer');
+  if (!name?.trim() || !message?.trim()) {
+    flash(req, 'error', 'Please enter your name and prayer request.');
+    return res.redirect('/prayer#form');
+  }
+  await M.Message.create({
+    kind: 'prayer',
+    name: name.slice(0, 100),
+    email: (email || '').slice(0, 150),
+    phone: (phone || '').slice(0, 30),
+    subject: 'Prayer request',
+    message: message.slice(0, 5000),
+    confidential: Boolean(req.body.confidential),
+    wantsCall: Boolean(req.body.wantsCall),
+  });
+  flash(req, 'success', 'Thank you. We have received your prayer request and we are praying with you.');
+  res.redirect('/prayer#form');
+});
+
 router.post('/contact', formLimiter, verifyCsrf, async (req, res) => {
   const { name, email, phone, subject, message, website } = req.body;
   if (website) return res.redirect('/contact');
@@ -106,6 +129,7 @@ router.post('/contact', formLimiter, verifyCsrf, async (req, res) => {
     return res.redirect('/contact#form');
   }
   await M.Message.create({
+    kind: /prayer/i.test(subject || '') ? 'prayer' : 'message',
     name: name.slice(0, 100),
     email: (email || '').slice(0, 150),
     phone: (phone || '').slice(0, 30),
