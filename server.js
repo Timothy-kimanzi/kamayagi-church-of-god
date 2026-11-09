@@ -11,6 +11,7 @@ const seed = require('./src/seed');
 const { getSettings } = require('./src/settings');
 const { csrfToken } = require('./src/security');
 const utils = require('./src/utils');
+const activity = require('./src/activity');
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/kamayagi';
@@ -75,8 +76,10 @@ app.get('/media/:id', async (req, res, next) => {
 
 app.use((req, res, next) => {
   if (req.session.userId && req.method === 'GET' && !req.path.startsWith('/admin') && req.path !== '/healthz') {
+    activity.record(req, 'logout', 'Logged out automatically (opened the public website)');
     delete req.session.userId;
     delete req.session.userName;
+    delete req.session.userEmail;
     delete req.session.leftAt;
   }
   next();

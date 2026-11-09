@@ -87,3 +87,17 @@ tr.unread td{font-weight:600;background:#f8fafc}
 .perm-area legend{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 0 .4rem}
 .perm-box:has(.super-toggle:checked) .perm-areas{display:none}
 .narrow-panel{max-width:520px}
+
+.filters{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end}
+.filters .field{min-width:180px;margin:0}
+.filters .actions{margin:0}
+.pager{display:flex;gap:1.2rem;justify-content:center;align-items:center;margin-top:1rem}
+.nowrap{white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.break{word-break:break-all;min-width:140px}
+.pill.act-login{background:#dcfce7;color:#166534}
+.pill.act-logout{background:#f3f4f6;color:#374151}
+.pill.act-failed{background:#fee2e2;color:#991b1b}
+.pill.act-denied{background:#ffedd5;color:#9a3412}
+.pill.act-change{background:#dbeafe;color:#1e40af}
+.pill.act-view{background:#f5f3ff;color:#5b21b6}

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const activity = require('./activity');
 
 function csrfToken(req, res, next) {
   if (!req.session.csrf) req.session.csrf = crypto.randomBytes(24).toString('hex');
@@ -19,8 +20,10 @@ function requireAdmin(req, res, next) {
   if (leftAt) {
     delete req.session.leftAt;
     if (Date.now() - leftAt > RELOAD_GRACE_MS) {
+      activity.record(req, 'logout', 'Logged out automatically (left the admin panel)', { at: leftAt });
       delete req.session.userId;
       delete req.session.userName;
+      delete req.session.userEmail;
     }
   }
   if (req.session.userId) return next();

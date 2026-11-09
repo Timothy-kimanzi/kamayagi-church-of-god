@@ -22,6 +22,11 @@ Home · About Us · Service Times · Ministries · Sermons · Events · Testimon
 - The first admin is the **super admin** and can do everything.
 - Only a super admin can add admins and choose what each one may use (each content type, Prayer Requests, Messages, and each Settings section). Areas an admin is not given are hidden from their menu and blocked.
 
+### Activity log
+
+- Super admins can open **Activity Log** to see every admin login, logout, failed login, blocked attempt, change and admin page opened, with date, time, page, device and IP address. Filter by admin, activity and date. Records are kept for 12 months.
+- **Admins & Password** shows each admin's last login and links to their activity.
+
 ### Login security
 
 - An admin must log in again after leaving the admin panel: opening the public website, going to another site, closing the tab or browser, or opening the admin panel in a new tab.

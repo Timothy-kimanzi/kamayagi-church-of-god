@@ -29,6 +29,7 @@
       <a href="/admin/settings/<%= g.id %>" class="<%= section === 'settings-' + g.id ? 'active' : '' %>"><%= g.label %></a>
     <% }) %>
     <a href="/admin/admins" class="<%= section === 'admins' ? 'active' : '' %>"><%= isSuper ? 'Admins & Password' : 'My Account' %></a>
+    <% if (isSuper) { %><a href="/admin/activity" class="<%= section === 'activity' ? 'active' : '' %>">Activity Log</a><% } %>
   </nav>
   <div class="sb-foot">
     <a href="/" target="_blank">View website ↗</a>

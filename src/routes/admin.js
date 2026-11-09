@@ -6,6 +6,7 @@ const M = require('../models');
 const resources = require('../resources');
 const settings = require('../settings');
 const perms = require('../permissions');
+const activity = require('../activity');
 const { verifyCsrf, requireAdmin, flash } = require('../security');
 const { saveImage, deleteImage, safeUrl } = require('../utils');
 
@@ -36,6 +37,7 @@ router.post('/login', loginLimiter, async (req, res) => {
   const user = await M.User.findOne({ email });
   const ok = user && (await bcrypt.compare(String(req.body.password || ''), user.passwordHash));
   if (!ok) {
+    activity.record(req, 'failed', `Failed login attempt for ${email || '(no email)'}`, { user: { email } });
     flash(req, 'error', 'Wrong email or password.');
     return res.redirect('/admin/login');
   }
@@ -44,11 +46,14 @@ router.post('/login', loginLimiter, async (req, res) => {
     if (err) throw err;
     req.session.userId = String(user._id);
     req.session.userName = user.name || user.email;
+    req.session.userEmail = user.email;
+    activity.record(req, 'login', 'Logged in', { user });
     res.redirect(nextUrl);
   });
 });
 
 router.post('/logout', (req, res) => {
+  if (req.session.userId) activity.record(req, 'logout', 'Logged out');
   req.session.destroy(() => res.redirect('/admin/login'));
 });
 
@@ -79,7 +84,22 @@ router.use(async (req, res, next) => {
   next();
 });
 
+// Activity log: req.audit describes a change (or a notable view); other admin pages are logged as views.
+router.use((req, res, next) => {
+  const render = res.render.bind(res);
+  res.render = (view, opts, cb) => {
+    req.pageTitle = opts && opts.title;
+    return render(view, opts, cb);
+  };
+  res.on('finish', () => {
+    if (req.audit) activity.record(req, req.method === 'GET' ? 'view' : 'change', req.audit);
+    else if (req.method === 'GET' && res.statusCode === 200 && req.pageTitle) activity.record(req, 'view', `Viewed ${req.pageTitle}`);
+  });
+  next();
+});
+
 function deny(req, res) {
+  activity.record(req, 'denied', 'Tried to open a page without permission');
   flash(req, 'error', 'You do not have permission to open that page. Ask the super admin for access.');
   res.redirect('/admin');
 }
@@ -130,6 +150,9 @@ async function applyFields(fields, body, files, doc) {
   return doc;
 }
 
+const nameOf = (doc) => doc.title || doc.name || doc.caption || '';
+const describe = (verb, r, doc) => `${verb} ${r.singular.toLowerCase()}${nameOf(doc) ? ` "${nameOf(doc)}"` : ''}`;
+
 function missingRequired(fields, doc) {
   return fields.filter((f) => f.required && !doc[f.name]).map((f) => f.label);
 }
@@ -154,6 +177,12 @@ router.post('/settings/:group', async (req, res, next) => {
   const current = await settings.getSettings();
   const updated = await applyFields(group.fields, req.body, req.files, { ...current });
   await Promise.all(group.fields.map((f) => settings.setSetting(f.name, updated[f.name])));
+  const changed = group.fields.filter((f) => String(current[f.name] ?? '') !== String(updated[f.name] ?? '')).map((f) => f.label);
+  if (group.id === 'live' && Boolean(current.isLive) !== Boolean(updated.isLive)) {
+    req.audit = updated.isLive ? 'Went live (live banner turned on)' : 'Ended live (live banner turned off)';
+  } else {
+    req.audit = `Saved ${group.label} settings${changed.length ? ` (changed: ${changed.join(', ')})` : ' (no changes)'}`;
+  }
   flash(req, 'success', `${group.label} saved.`);
   res.redirect(`/admin/settings/${group.id}`);
 });
@@ -187,6 +216,7 @@ router.post('/r/:resource', async (req, res) => {
     return res.redirect(`/admin/r/${res.locals.resourceKey}/new`);
   }
   await req.resource.model.create(doc);
+  req.audit = describe('Added', req.resource, doc);
   flash(req, 'success', `${req.resource.singular} added.`);
   res.redirect(`/admin/r/${res.locals.resourceKey}`);
 });
@@ -214,8 +244,11 @@ router.post('/r/:resource/:id', async (req, res, next) => {
     flash(req, 'error', `Please fill in: ${missing.join(', ')}`);
     return res.redirect(`/admin/r/${res.locals.resourceKey}/${doc._id}/edit`);
   }
+  const wasApproved = doc.approved;
   for (const f of req.resource.fields) doc[f.name] = plain[f.name];
   await doc.save();
+  const approval = res.locals.resourceKey === 'testimonies' && wasApproved !== doc.approved;
+  req.audit = describe(approval ? (doc.approved ? 'Approved' : 'Unapproved') : 'Edited', req.resource, doc);
   flash(req, 'success', `${req.resource.singular} saved.`);
   res.redirect(`/admin/r/${res.locals.resourceKey}`);
 });
@@ -227,6 +260,7 @@ router.post('/r/:resource/:id/toggle/:field', async (req, res, next) => {
   if (!doc) return next();
   doc[field.name] = !doc[field.name];
   await doc.save();
+  req.audit = `${describe('Changed', req.resource, doc)}: "${field.label}" turned ${doc[field.name] ? 'on' : 'off'}`;
   res.redirect(`/admin/r/${res.locals.resourceKey}`);
 });
 
@@ -236,6 +270,7 @@ router.post('/r/:resource/:id/delete', async (req, res, next) => {
   if (!doc) return next();
   await Promise.all(req.resource.fields.filter((f) => f.type === 'image').map((f) => deleteImage(doc[f.name])));
   await req.resource.model.deleteOne({ _id: doc._id });
+  req.audit = describe('Deleted', req.resource, doc);
   flash(req, 'success', `${req.resource.singular} deleted.`);
   res.redirect(`/admin/r/${res.locals.resourceKey}`);
 });
@@ -261,6 +296,7 @@ Object.entries(inboxes).forEach(([key, box]) => {
     const message = await find(req.params.id);
     if (!message) return next();
     if (!message.read) await M.Message.updateOne({ _id: message._id }, { read: true });
+    req.audit = `Opened ${box.singular.toLowerCase()} from ${message.name}`;
     res.render('admin/message', { title: box.singular, box, base, message: message.toObject(), section: key });
   });
 
@@ -269,21 +305,58 @@ Object.entries(inboxes).forEach(([key, box]) => {
     const message = await find(req.params.id);
     if (!message) return next();
     await M.Message.updateOne({ _id: message._id }, { prayed: !message.prayed });
+    req.audit = `Marked prayer request from ${message.name} as ${message.prayed ? 'not yet prayed for' : 'prayed for'}`;
     res.redirect(req.body.back === 'list' ? base : `${base}/${message._id}`);
   });
 
   router.post(`/${key}/:id/delete`, async (req, res, next) => {
     if (!isId(req.params.id)) return next();
-    await M.Message.deleteOne({ _id: req.params.id, ...box.filter });
+    const message = await M.Message.findOneAndDelete({ _id: req.params.id, ...box.filter });
+    if (message) req.audit = `Deleted ${box.singular.toLowerCase()} from ${message.name}`;
     flash(req, 'success', `${box.singular} deleted.`);
     res.redirect(base);
   });
 });
 
 // Admin accounts (only the super admin can manage other admins)
+const accessText = (u) => (u.isSuper ? 'Super admin' : `access: ${(u.permissions || []).map((k) => perms.labels[k]).join(', ') || 'none'}`);
+
+router.get('/activity', superOnly, async (req, res) => {
+  const filter = {};
+  const q = { user: '', type: '', date: '' };
+  if (isId(req.query.user || '')) filter.user = q.user = req.query.user;
+  if (Object.hasOwn(activity.types, req.query.type || '')) filter.type = q.type = req.query.type;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(req.query.date || '')) {
+    q.date = req.query.date;
+    const start = new Date(`${q.date}T00:00:00+03:00`);
+    filter.createdAt = { $gte: start, $lt: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
+  }
+  const per = 50;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const [entries, total, users] = await Promise.all([
+    M.Activity.find(filter).sort({ createdAt: -1 }).skip((page - 1) * per).limit(per).lean(),
+    M.Activity.countDocuments(filter),
+    M.User.find().sort({ createdAt: 1 }).lean(),
+  ]);
+  res.render('admin/activity', {
+    title: 'Activity Log',
+    entries,
+    total,
+    page,
+    pages: Math.max(1, Math.ceil(total / per)),
+    users,
+    types: activity.types,
+    q,
+    section: 'activity',
+  });
+});
 router.get('/admins', async (req, res) => {
   const users = req.user.isSuper ? await M.User.find().sort({ createdAt: 1 }).lean() : [];
-  res.render('admin/admins', { title: 'Admin Accounts', users, me: String(req.user._id), perms, section: 'admins' });
+  const lastLogins = req.user.isSuper
+    ? await M.Activity.aggregate([{ $match: { type: 'login' } }, { $sort: { createdAt: -1 } }, { $group: { _id: '$user', at: { $first: '$createdAt' } } }])
+    : [];
+  const lastLogin = Object.fromEntries(lastLogins.map((l) => [String(l._id), l.at]));
+  res.render('admin/admins', { title: 'Admin Accounts', users, lastLogin, me: String(req.user._id), perms, section: 'admins' });
 });
 
 router.post('/admins', superOnly, async (req, res) => {
@@ -297,13 +370,14 @@ router.post('/admins', superOnly, async (req, res) => {
     flash(req, 'error', 'An admin with that email already exists.');
     return res.redirect('/admin/admins');
   }
-  await M.User.create({
+  const created = await M.User.create({
     name: String(req.body.name || '').trim(),
     email,
     isSuper: req.body.isSuper === 'on',
     permissions: perms.clean(req.body.permissions),
     passwordHash: await bcrypt.hash(password, 12),
   });
+  req.audit = `Added admin ${email} (${accessText(created)})`;
   flash(req, 'success', 'Admin account created.');
   res.redirect('/admin/admins');
 });
@@ -330,6 +404,7 @@ router.post('/admins/:id', superOnly, async (req, res, next) => {
   account.permissions = perms.clean(req.body.permissions);
   if (password) account.passwordHash = await bcrypt.hash(password, 12);
   await account.save();
+  req.audit = `Edited admin ${account.email} (${accessText(account)}${password ? '; password changed' : ''})`;
   flash(req, 'success', 'Admin account saved.');
   res.redirect('/admin/admins');
 });
@@ -340,7 +415,8 @@ router.post('/admins/:id/delete', superOnly, async (req, res, next) => {
     flash(req, 'error', 'You cannot delete your own account.');
     return res.redirect('/admin/admins');
   }
-  await M.User.deleteOne({ _id: req.params.id });
+  const removed = await M.User.findOneAndDelete({ _id: req.params.id });
+  if (removed) req.audit = `Removed admin ${removed.email}`;
   flash(req, 'success', 'Admin account removed.');
   res.redirect('/admin/admins');
 });
@@ -355,6 +431,7 @@ router.post('/account/password', async (req, res) => {
   } else {
     user.passwordHash = await bcrypt.hash(password, 12);
     await user.save();
+    req.audit = 'Changed own password';
     flash(req, 'success', 'Password changed.');
   }
   res.redirect('/admin/admins');

@@ -1,0 +1,40 @@
+<%- include('../partials/admin-header') %>
+<h1>Activity Log</h1>
+<p class="muted">Every admin login, logout, failed login, change and admin page opened. Only super admins can see this page, and nobody can edit or delete it. Records are kept for 12 months.</p>
+<form method="get" action="/admin/activity" class="panel filters">
+  <div class="field"><label>Admin</label>
+    <select name="user"><option value="">All admins</option><% users.forEach((x) => { %><option value="<%= x._id %>" <%= q.user === String(x._id) ? 'selected' : '' %>><%= x.name || x.email %></option><% }) %></select>
+  </div>
+  <div class="field"><label>Activity</label>
+    <select name="type"><option value="">Everything</option><% Object.entries(types).forEach(([k, t]) => { %><option value="<%= k %>" <%= q.type === k ? 'selected' : '' %>><%= t.plural %></option><% }) %></select>
+  </div>
+  <div class="field"><label>Date</label><input type="date" name="date" value="<%= q.date %>"></div>
+  <div class="actions"><button class="btn">Show</button><a href="/admin/activity">Clear</a></div>
+</form>
+<div class="panel">
+<% if (entries.length) { %>
+  <p class="muted small"><%= total %> record<%= total === 1 ? '' : 's' %></p>
+  <div class="table-scroll"><table class="list">
+    <thead><tr><th>Date &amp; time</th><th>Admin</th><th>Activity</th><th>Page</th><th>Device &amp; IP</th></tr></thead>
+    <tbody>
+    <% entries.forEach((e) => { %>
+      <tr>
+        <td class="muted nowrap"><%= u.formatDate(e.createdAt, { dateStyle: 'medium', timeStyle: 'medium' }) %></td>
+        <td><%= e.userName || e.email || 'Unknown' %><% if (e.email && e.userName) { %><br><span class="muted small"><%= e.email %></span><% } %></td>
+        <td><span class="pill act-<%= e.type %>"><%= (types[e.type] || {}).label || e.type %></span> <%= e.action %></td>
+        <td class="small break"><%= e.path %></td>
+        <td class="small muted"><%= e.device %><br><%= e.ip %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% if (pages > 1) { const link = (p) => '/admin/activity?' + new URLSearchParams({ ...q, page: p }).toString(); %>
+    <div class="pager">
+      <% if (page > 1) { %><a href="<%= link(page - 1) %>">&larr; Newer</a><% } %>
+      <span class="muted">Page <%= page %> of <%= pages %></span>
+      <% if (page < pages) { %><a href="<%= link(page + 1) %>">Older &rarr;</a><% } %>
+    </div>
+  <% } %>
+<% } else { %><p class="muted">No activity found.</p><% } %>
+</div>
+<%- include('../partials/admin-footer') %>

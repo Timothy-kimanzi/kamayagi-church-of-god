@@ -4,14 +4,16 @@
 <div class="panel">
   <h2>Admin accounts</h2>
   <table class="list">
-    <thead><tr><th>Name</th><th>Email</th><th>Access</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Access</th><th>Last login</th><th></th></tr></thead>
     <tbody>
     <% users.forEach((usr) => { const mine = String(usr._id) === me; %>
       <tr>
         <td><%= usr.name || '—' %></td>
         <td><%= usr.email %></td>
         <td><% if (usr.isSuper) { %><span class="pill on">Super admin</span><% } else if ((usr.permissions || []).length) { %><span class="small"><%= usr.permissions.map((k) => perms.labels[k]).filter(Boolean).join(', ') %></span><% } else { %><span class="muted small">No access yet</span><% } %></td>
+        <td class="muted small"><%= lastLogin[String(usr._id)] ? u.formatDate(lastLogin[String(usr._id)], { dateStyle: 'medium', timeStyle: 'short' }) : 'Never' %></td>
         <td class="row-actions">
+          <a href="/admin/activity?user=<%= usr._id %>">Activity</a>
           <a href="/admin/admins/<%= usr._id %>">Edit access</a>
           <% if (!mine) { %><form method="post" action="/admin/admins/<%= usr._id %>/delete" class="inline confirm"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="link danger">Remove</button></form><% } else { %><span class="muted">You</span><% } %>
         </td>

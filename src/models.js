@@ -95,6 +95,18 @@ const Message = new Schema(
   opts
 );
 
+const Activity = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+  userName: String,
+  email: String,
+  type: { type: String, enum: ['login', 'logout', 'failed', 'denied', 'change', 'view'], index: true },
+  action: String,
+  path: String,
+  ip: String,
+  device: String,
+  createdAt: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 365 },
+});
+
 module.exports = {
   Image: mongoose.model('Image', ImageSchema),
   Setting: mongoose.model('Setting', SettingSchema),
@@ -107,4 +119,5 @@ module.exports = {
   Photo: mongoose.model('Photo', Photo),
   Leader: mongoose.model('Leader', Leader),
   Message: mongoose.model('Message', Message),
+  Activity: mongoose.model('Activity', Activity),
 };
